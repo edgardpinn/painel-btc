@@ -1,12 +1,165 @@
-  <!-- SCRIPT DOS CARDS — API CoinGecko (100% compatível com GitHub Pages) -->
+  <!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <title>Painel Bitcoin Pro</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <style>
+    body {
+      background: #020617;
+      color: #f9fafb;
+      padding: 20px;
+      font-family: sans-serif;
+    }
+    .title {
+      font-size: 1.8rem;
+      font-weight: bold;
+      margin-bottom: 8px;
+    }
+    .subtitle {
+      opacity: .8;
+      margin-bottom: 20px;
+    }
+
+    /* GRID DE CARDS */
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+      margin-bottom: 30px;
+    }
+    .card {
+      background: #111827;
+      padding: 16px;
+      border-radius: 12px;
+      border: 1px solid rgba(148, 163, 184, 0.25);
+    }
+    .card-title {
+      font-size: 0.9rem;
+      opacity: 0.8;
+    }
+    .card-value {
+      font-size: 1.4rem;
+      font-weight: bold;
+      margin-top: 4px;
+    }
+    .chip {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      margin-top: 8px;
+    }
+    .chip.up {
+      background: rgba(22, 163, 74, .12);
+      color: #4ade80;
+      border: 1px solid rgba(74, 222, 128, .4);
+    }
+    .chip.down {
+      background: rgba(220, 38, 38, .12);
+      color: #f87171;
+      border: 1px solid rgba(248, 113, 113, .4);
+    }
+    .error {
+      margin-top: 6px;
+      font-size: 0.8rem;
+      color: #fecaca;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="title">Painel Bitcoin Pro</div>
+  <div class="subtitle">Preço, dados ao vivo e gráfico profissional</div>
+
+  <!-- CARDS -->
+  <div class="grid">
+    <div class="card">
+      <div class="card-title">Preço Atual (USD)</div>
+      <div class="card-value" id="price">--</div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Variação 24h</div>
+      <div class="card-value" id="change24">--</div>
+      <div id="chip"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Market Cap</div>
+      <div class="card-value" id="marketCap">--</div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Volume 24h</div>
+      <div class="card-value" id="volume24">--</div>
+    </div>
+  </div>
+
+  <!-- GRAFICO TRADINGVIEW -->
+  <div class="tradingview-widget-container">
+    <div id="tradingview_btc"></div>
+    <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
+    <script>
+      new TradingView.widget({
+        width: "100%",
+        height: 600,
+        symbol: "BINANCE:BTCUSDT",
+        interval: "60",
+        timezone: "Etc/UTC",
+        theme: "dark",
+        style: "1",
+        locale: "br",
+        toolbar_bg: "#020617",
+        enable_publishing: false,
+        allow_symbol_change: true,
+        container_id: "tradingview_btc"
+      });
+    </script>
+  </div>
+
+  <div class="error" id="errorBox"></div>
+
+  <!-- SCRIPT DOS CARDS – COINGECKO -->
   <script>
+    const priceEl = document.getElementById("price");
+    const changeEl = document.getElementById("change24");
+    const marketCapEl = document.getElementById("marketCap");
+    const volumeEl = document.getElementById("volume24");
+    const chipEl = document.getElementById("chip");
+    const errorBoxEl = document.getElementById("errorBox");
+
+    function formatUSD(v) {
+      return Number(v).toLocaleString("en-US", {
+        style: "currency",
+        currency: "USD",
+        maximumFractionDigits: 2
+      });
+    }
+
+    function formatBigUSD(v) {
+      const n = Number(v);
+      if (n >= 1e12) return (n / 1e12).toFixed(2) + " T";
+      if (n >= 1e9) return (n / 1e9).toFixed(2) + " B";
+      if (n >= 1e6) return (n / 1e6).toFixed(2) + " M";
+      return n.toLocaleString("en-US", { maximumFractionDigits: 0 });
+    }
+
     async function loadBTC() {
       try {
-        // Endpoint MAIS estável e sem frescura
-        const url = "https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd&include_market_cap=true&include_24hr_vol=true&include_24hr_change=true";
+        errorBoxEl.textContent = "";
+
+        const url =
+          "https://api.coingecko.com/api/v3/simple/price" +
+          "?ids=bitcoin" +
+          "&vs_currencies=usd" +
+          "&include_market_cap=true" +
+          "&include_24hr_vol=true" +
+          "&include_24hr_change=true";
 
         const resp = await fetch(url);
-        if (!resp.ok) throw new Error("Erro HTTP " + resp.status);
+        if (!resp.ok) throw new Error("HTTP " + resp.status);
 
         const data = await resp.json();
         const btc = data.bitcoin;
@@ -16,34 +169,28 @@
         const marketcap = btc.usd_market_cap;
         const volume = btc.usd_24h_vol;
 
-        document.getElementById("price").textContent =
-          price.toLocaleString("en-US", { style: "currency", currency: "USD" });
+        priceEl.textContent = formatUSD(price);
+        changeEl.textContent = change.toFixed(2) + "%";
+        marketCapEl.textContent = formatBigUSD(marketcap);
+        volumeEl.textContent = formatBigUSD(volume);
 
-        document.getElementById("change24").textContent =
-          change.toFixed(2) + "%";
-
-        document.getElementById("marketCap").textContent =
-          (marketcap / 1e9).toFixed(1) + " B";
-
-        document.getElementById("volume24").textContent =
-          (volume / 1e9).toFixed(1) + " B";
-
-        // Chip verde/vermelho
-        const chip = document.getElementById("chip");
-        chip.innerHTML = "";
+        chipEl.innerHTML = "";
         const span = document.createElement("span");
-
         span.classList.add("chip");
         span.classList.add(change >= 0 ? "up" : "down");
-        span.textContent = change >= 0 ? "Alta nas últimas 24h" : "Queda nas últimas 24h";
-
-        chip.appendChild(span);
-
+        span.textContent =
+          change >= 0 ? "Alta nas últimas 24h" : "Queda nas últimas 24h";
+        chipEl.appendChild(span);
       } catch (err) {
-        console.error("Erro ao carregar dados:", err);
+        console.error("Erro ao buscar dados BTC:", err);
+        errorBoxEl.textContent =
+          "Erro ao buscar dados da API (CoinGecko). Pode ser limite da API ou problema de conexão.";
       }
     }
 
     loadBTC();
     setInterval(loadBTC, 30000);
   </script>
+
+</body>
+</html>
