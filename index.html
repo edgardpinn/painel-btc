@@ -1,4 +1,4 @@
- <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
@@ -6,152 +6,220 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
   <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+        sans-serif;
+    }
+
     body {
       background: #020617;
       color: #f9fafb;
       padding: 20px;
-      font-family: sans-serif;
     }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
     .title {
       font-size: 1.8rem;
-      font-weight: bold;
-      margin-bottom: 8px;
+      font-weight: 700;
+      margin-bottom: 6px;
     }
+
     .subtitle {
       opacity: .8;
-      margin-bottom: 20px;
+      margin-bottom: 18px;
+      font-size: .9rem;
     }
 
     /* GRID DE CARDS */
     .grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
       gap: 16px;
-      margin-bottom: 30px;
+      margin-bottom: 22px;
     }
+
     .card {
       background: #111827;
       padding: 16px;
       border-radius: 12px;
-      border: 1px solid rgba(148, 163, 184, 0.25);
+      border: 1px solid rgba(148, 163, 184, 0.35);
+      box-shadow: 0 14px 30px rgba(0, 0, 0, 0.55);
     }
+
     .card-title {
       font-size: 0.9rem;
-      opacity: 0.8;
+      opacity: 0.85;
     }
+
     .card-value {
       font-size: 1.4rem;
-      font-weight: bold;
+      font-weight: 600;
       margin-top: 4px;
     }
+
     .card-sub {
       font-size: 0.8rem;
       margin-top: 4px;
       opacity: 0.8;
+      line-height: 1.4;
     }
+
     .chip {
       display: inline-block;
       padding: 3px 10px;
       border-radius: 999px;
       font-size: 0.75rem;
       margin-top: 8px;
+      font-weight: 500;
     }
+
     .chip.up {
       background: rgba(22, 163, 74, .12);
       color: #4ade80;
       border: 1px solid rgba(74, 222, 128, .4);
     }
+
     .chip.down {
       background: rgba(220, 38, 38, .12);
       color: #f87171;
       border: 1px solid rgba(248, 113, 113, .4);
     }
+
     .error {
       margin-top: 6px;
       font-size: 0.8rem;
       color: #fecaca;
     }
+
     a.link-fng {
       color: #38bdf8;
       text-decoration: none;
       font-size: 0.75rem;
     }
+
+    a.link-fng:hover {
+      text-decoration: underline;
+    }
+
+    .section-title {
+      font-size: .9rem;
+      opacity: .8;
+      margin-bottom: 6px;
+      margin-top: 8px;
+    }
   </style>
 </head>
 <body>
-
-  <div class="title">Painel Bitcoin Pro</div>
-  <div class="subtitle">Preço, sentimento de mercado e gráfico profissional</div>
-
-  <!-- CARDS PREÇO / MERCADO -->
-  <div class="grid">
-    <div class="card">
-      <div class="card-title">Preço Atual (USD)</div>
-      <div class="card-value" id="price">--</div>
+  <div class="container">
+    <div class="title">Painel Bitcoin Pro</div>
+    <div class="subtitle">
+      Preço, sentimento, derivativos e gráfico em um painel único.
     </div>
 
-    <div class="card">
-      <div class="card-title">Variação 24h</div>
-      <div class="card-value" id="change24">--</div>
-      <div id="chip"></div>
-    </div>
+    <!-- CARDS PREÇO / MERCADO -->
+    <div class="grid">
+      <div class="card">
+        <div class="card-title">Preço Atual (USD)</div>
+        <div class="card-value" id="price">--</div>
+        <div class="card-sub">Cotação spot aproximada (CoinGecko)</div>
+      </div>
 
-    <div class="card">
-      <div class="card-title">Market Cap</div>
-      <div class="card-value" id="marketCap">--</div>
-    </div>
+      <div class="card">
+        <div class="card-title">Variação 24h</div>
+        <div class="card-value" id="change24">--</div>
+        <div id="chip"></div>
+      </div>
 
-    <div class="card">
-      <div class="card-title">Volume 24h</div>
-      <div class="card-value" id="volume24">--</div>
-    </div>
-  </div>
+      <div class="card">
+        <div class="card-title">Market Cap</div>
+        <div class="card-value" id="marketCap">--</div>
+        <div class="card-sub">Valor de mercado estimado do BTC</div>
+      </div>
 
-  <!-- FEAR & GREED -->
-  <div class="grid">
-    <div class="card">
-      <div class="card-title">Fear &amp; Greed (Índice)</div>
-      <div class="card-value" id="fngValue">--</div>
-      <div class="card-sub" id="fngLabel">Carregando sentimento do mercado...</div>
-      <div class="card-sub">
-        <a class="link-fng" href="https://alternative.me/crypto/fear-and-greed-index/" target="_blank">
-          Dados do índice por alternative.me
-        </a>
+      <div class="card">
+        <div class="card-title">Volume 24h</div>
+        <div class="card-value" id="volume24">--</div>
+        <div class="card-sub">Volume total negociado nas últimas 24h</div>
       </div>
     </div>
 
-    <div class="card">
-      <div class="card-title">Leitura rápida do momento</div>
-      <div class="card-sub" id="fngComment">--</div>
+    <!-- FEAR & GREED + LEITURA -->
+    <div class="section-title">Sentimento de Mercado</div>
+    <div class="grid">
+      <div class="card">
+        <div class="card-title">Fear &amp; Greed Index</div>
+        <div class="card-value" id="fngValue">--</div>
+        <div class="card-sub" id="fngLabel">Carregando sentimento...</div>
+        <div class="card-sub">
+          <a class="link-fng" href="https://alternative.me/crypto/fear-and-greed-index/" target="_blank">
+            Fonte: alternative.me
+          </a>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Leitura rápida</div>
+        <div class="card-sub" id="fngComment">--</div>
+      </div>
     </div>
+
+    <!-- DERIVATIVOS: FUNDING + OI -->
+    <div class="section-title">Derivativos · Binance BTCUSDT Perp</div>
+    <div class="grid">
+      <div class="card">
+        <div class="card-title">Funding Rate (último)</div>
+        <div class="card-value" id="fundingValue">--</div>
+        <div class="card-sub" id="fundingComment">Carregando funding...</div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Open Interest (BTCUSDT)</div>
+        <div class="card-value" id="oiValue">--</div>
+        <div class="card-sub">
+          Variação 5 min: <span id="oiChange">--</span>
+        </div>
+        <div class="card-sub" id="oiComment">Carregando OI...</div>
+      </div>
+    </div>
+
+    <!-- GRAFICO TRADINGVIEW -->
+    <div class="section-title">Gráfico BTCUSDT · 1h (TradingView)</div>
+    <div class="card" style="background:#020617; border:none; box-shadow:none; padding:0;">
+      <div class="tradingview-widget-container">
+        <div id="tradingview_btc"></div>
+        <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
+        <script type="text/javascript">
+          new TradingView.widget({
+            width: "100%",
+            height: 600,
+            symbol: "BINANCE:BTCUSDT",
+            interval: "60",
+            timezone: "Etc/UTC",
+            theme: "dark",
+            style: "1",
+            locale: "br",
+            toolbar_bg: "#020617",
+            enable_publishing: false,
+            allow_symbol_change: true,
+            container_id: "tradingview_btc"
+          });
+        </script>
+      </div>
+    </div>
+
+    <div class="error" id="errorBox"></div>
   </div>
 
-  <!-- GRAFICO TRADINGVIEW -->
-  <div class="tradingview-widget-container">
-    <div id="tradingview_btc"></div>
-    <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
-    <script>
-      new TradingView.widget({
-        width: "100%",
-        height: 600,
-        symbol: "BINANCE:BTCUSDT",
-        interval: "60",
-        timezone: "Etc/UTC",
-        theme: "dark",
-        style: "1",
-        locale: "br",
-        toolbar_bg: "#020617",
-        enable_publishing: false,
-        allow_symbol_change: true,
-        container_id: "tradingview_btc"
-      });
-    </script>
-  </div>
-
-  <div class="error" id="errorBox"></div>
-
-  <!-- SCRIPT DOS CARDS – COINGECKO + FEAR & GREED -->
+  <!-- SCRIPT: PREÇO / VOL / MARKET CAP (COINGECKO) + SENTIMENTO + DERIVATIVOS -->
   <script>
+    // ELEMENTOS
     const priceEl = document.getElementById("price");
     const changeEl = document.getElementById("change24");
     const marketCapEl = document.getElementById("marketCap");
@@ -163,6 +231,14 @@
     const fngLabelEl = document.getElementById("fngLabel");
     const fngCommentEl = document.getElementById("fngComment");
 
+    const fundValueEl = document.getElementById("fundingValue");
+    const fundCommentEl = document.getElementById("fundingComment");
+
+    const oiValueEl = document.getElementById("oiValue");
+    const oiChangeEl = document.getElementById("oiChange");
+    const oiCommentEl = document.getElementById("oiComment");
+
+    // FORMATADORES
     function formatUSD(v) {
       return Number(v).toLocaleString("en-US", {
         style: "currency",
@@ -179,11 +255,9 @@
       return n.toLocaleString("en-US", { maximumFractionDigits: 0 });
     }
 
-    // --- BTC PRICE / MARKET DATA (COINGECKO) ---
+    // ---------------- BTC PRICE / MARKET DATA (COINGECKO) ----------------
     async function loadBTC() {
       try {
-        errorBoxEl.textContent = "";
-
         const url =
           "https://api.coingecko.com/api/v3/simple/price" +
           "?ids=bitcoin" +
@@ -218,23 +292,23 @@
       } catch (err) {
         console.error("Erro ao buscar dados BTC:", err);
         errorBoxEl.textContent =
-          "Erro ao buscar dados da API (CoinGecko). Pode ser limite da API ou problema de conexão.";
+          "Erro ao buscar dados de preço (CoinGecko). Pode ser limite da API ou conexão.";
       }
     }
 
-    // --- FEAR & GREED (ALTERNATIVE.ME) ---
-    function gerarComentarioFNG(valor, classificacao) {
+    // ---------------- FEAR & GREED (ALTERNATIVE.ME) ----------------
+    function gerarComentarioFNG(valor) {
       const v = Number(valor);
       if (v <= 20) {
-        return "Medo extremo: mercado bem tenso, crowd pessimista. Geralmente é onde quem pensa no longo prazo começa a montar posição.";
+        return "Medo extremo: mercado bem tenso. Em geral é zona onde quem pensa longo prazo começa a montar posição.";
       } else if (v <= 40) {
-        return "Medo: investidores mais defensivos, menos apetite a risco. Bons pontos pra comprar com calma, mas sem pressa.";
+        return "Medo: investidor mais defensivo, menos apetite a risco. Bom pra comprar com calma, sem pressa.";
       } else if (v < 60) {
-        return "Neutro: mercado sem emoção forte. Normalmente bom para observar e se posicionar com critério, sem FOMO.";
+        return "Neutro: mercado sem emoção forte. Momento bom pra observar e se posicionar com critério.";
       } else if (v < 80) {
-        return "Ganância: apetite a risco maior, normalmente com muita confiança em alta. Fica atento a alavancagem e correções.";
+        return "Ganância: apetite a risco maior, confiança alta. Fica ligado em alavancagem e possibilidade de correções.";
       } else {
-        return "Ganância extrema: euforia forte, risco alto de correção brusca. Hora de ter disciplina, não emoção.";
+        return "Ganância extrema: euforia pesada, risco alto de correção brusca. Hora de ter disciplina, não emoção.";
       }
     }
 
@@ -252,22 +326,90 @@
 
         fngValueEl.textContent = value;
         fngLabelEl.textContent = classification;
-        fngCommentEl.textContent = gerarComentarioFNG(value, classification);
+        fngCommentEl.textContent = gerarComentarioFNG(value);
       } catch (err) {
         console.error("Erro ao buscar Fear & Greed:", err);
         fngLabelEl.textContent = "Erro ao carregar índice de sentimento.";
-        fngCommentEl.textContent = "Possível instabilidade na API do Fear & Greed ou bloqueio de rede.";
+        fngCommentEl.textContent =
+          "Possível instabilidade na API do Fear & Greed ou bloqueio de rede.";
       }
     }
 
-    // disparo inicial
+    // ---------------- FUNDING RATE (BINANCE) ----------------
+    async function loadFunding() {
+      try {
+        const url =
+          "https://fapi.binance.com/fapi/v1/premiumIndex?symbol=BTCUSDT";
+        const res = await fetch(url);
+        if (!res.ok) throw new Error("HTTP " + res.status);
+        const data = await res.json();
+
+        const funding = Number(data.lastFundingRate) * 100;
+
+        fundValueEl.textContent = funding.toFixed(4) + "%";
+
+        if (funding > 0) {
+          fundCommentEl.textContent =
+            "Funding positivo: longs pagando shorts → mercado confiante, compradores dominando.";
+        } else if (funding < 0) {
+          fundCommentEl.textContent =
+            "Funding negativo: shorts pagando longs → mercado defensivo, vendedores dominando.";
+        } else {
+          fundCommentEl.textContent = "Funding neutro.";
+        }
+      } catch (e) {
+        console.error("Erro ao carregar funding:", e);
+        fundCommentEl.textContent =
+          "Erro ao carregar Funding Rate (Binance). Pode ser limite ou bloqueio de rede.";
+      }
+    }
+
+    // ---------------- OPEN INTEREST (BINANCE) ----------------
+    async function loadOI() {
+      try {
+        const url =
+          "https://fapi.binance.com/futures/data/openInterestHist" +
+          "?symbol=BTCUSDT&period=5m&limit=2";
+        const res = await fetch(url);
+        if (!res.ok) throw new Error("HTTP " + res.status);
+        const data = await res.json();
+
+        const anterior = Number(data[0].sumOpenInterest);
+        const atual = Number(data[1].sumOpenInterest);
+
+        oiValueEl.textContent = (atual / 1e9).toFixed(2) + " B";
+
+        const diff = ((atual - anterior) / anterior) * 100;
+        oiChangeEl.textContent = diff.toFixed(2) + "%";
+
+        if (diff > 1) {
+          oiCommentEl.textContent =
+            "OI subindo forte → entrada de alavancagem, mercado mais carregado em risco.";
+        } else if (diff < -1) {
+          oiCommentEl.textContent =
+            "OI caindo forte → desalavancagem, posições sendo fechadas.";
+        } else {
+          oiCommentEl.textContent =
+            "OI relativamente estável nas últimas janelas.";
+        }
+      } catch (e) {
+        console.error("Erro ao carregar OI:", e);
+        oiCommentEl.textContent =
+          "Erro ao carregar Open Interest (Binance).";
+      }
+    }
+
+    // DISPAROS INICIAIS
     loadBTC();
     loadFNG();
+    loadFunding();
+    loadOI();
 
-    // atualiza preço a cada 30s, Fear & Greed a cada 15min (ele só muda 1x por dia mesmo)
-    setInterval(loadBTC, 30000);
-    setInterval(loadFNG, 15 * 60 * 1000);
+    // AGENDAMENTOS
+    setInterval(loadBTC, 30_000);      // 30s
+    setInterval(loadFunding, 60_000);  // 1min
+    setInterval(loadOI, 60_000);       // 1min
+    setInterval(loadFNG, 15 * 60_000); // 15min (Fear & Greed muda 1x/dia)
   </script>
-
 </body>
 </html>
