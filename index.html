@@ -177,35 +177,21 @@
       </div>
     </div>
 
-    <!-- GRAFICO TRADINGVIEW -->
-    <div class="section-title">Gráfico BTCUSDT · 1h (TradingView)</div>
-    <div class="card" style="background:#020617; border:none; box-shadow:none; padding:0;">
-      <div class="tradingview-widget-container">
-        <div id="tradingview_btc"></div>
-        <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
-        <script type="text/javascript">
-          new TradingView.widget({
-            width: "100%",
-            height: 600,
-            symbol: "BINANCE:BTCUSDT",
-            interval: "60",
-            timezone: "America/Sao_Paulo",
-            theme: "dark",
-            style: "1",
-            locale: "br",
-            toolbar_bg: "#020617",
-            enable_publishing: false,
-            allow_symbol_change: true,
-            container_id: "tradingview_btc"
-          });
-        </script>
-      </div>
+    <!-- GRÁFICO BTC (COINGECKO + CHART.JS) -->
+    <div class="section-title">Gráfico BTCUSD · últimas 24h</div>
+    <div class="card">
+      <div class="card-title">Preço BTC (USD)</div>
+      <div class="card-sub">Dados das últimas 24h · CoinGecko · horário local</div>
+      <canvas id="btcChart" style="margin-top: 12px; width: 100%; height: 320px;"></canvas>
     </div>
 
     <div class="error" id="errorBox"></div>
   </div>
 
-  <!-- SCRIPT: PREÇO / VOL / MARKET CAP (COINGECKO) + SENTIMENTO + DERIVATIVOS -->
+  <!-- CHART.JS -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <!-- SCRIPT: PREÇO / VOL / MARKET CAP (COINGECKO) + SENTIMENTO + DERIVATIVOS + GRÁFICO -->
   <script>
     // ELEMENTOS
     const priceEl = document.getElementById("price");
@@ -225,6 +211,8 @@
     const oiValueEl = document.getElementById("oiValue");
     const oiChangeEl = document.getElementById("oiChange");
     const oiCommentEl = document.getElementById("oiComment");
+
+    let btcChart = null;
 
     // FORMATADORES
     function formatUSD(v) {
@@ -281,6 +269,90 @@
         console.error("Erro ao buscar dados BTC:", err);
         errorBoxEl.textContent =
           "Erro ao buscar dados de preço (CoinGecko). Pode ser limite da API ou conexão.";
+      }
+    }
+
+    // ---------------- GRÁFICO BTC (COINGECKO MARKET_CHART) ----------------
+    async function loadBTCChart() {
+      try {
+        const url =
+          "https://api.coingecko.com/api/v3/coins/bitcoin/market_chart" +
+          "?vs_currency=usd&days=1&interval=hourly";
+
+        const resp = await fetch(url);
+        if (!resp.ok) throw new Error("HTTP " + resp.status);
+
+        const data = await resp.json();
+        const prices = data.prices; // [ [timestamp, price], ... ]
+
+        const labels = prices.map(p => {
+          const d = new Date(p[0]);
+          return d.toLocaleTimeString("pt-BR", {
+            hour: "2-digit",
+            minute: "2-digit"
+          });
+        });
+
+        const values = prices.map(p => p[1]);
+
+        const ctx = document.getElementById("btcChart").getContext("2d");
+
+        if (btcChart) {
+          btcChart.destroy();
+        }
+
+        btcChart = new Chart(ctx, {
+          type: "line",
+          data: {
+            labels: labels,
+            datasets: [
+              {
+                label: "BTCUSD (24h)",
+                data: values,
+                borderWidth: 2,
+                borderColor: "#38bdf8",
+                backgroundColor: "rgba(56, 189, 248, 0.15)",
+                tension: 0.25,
+                pointRadius: 0
+              }
+            ]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                display: false
+              },
+              tooltip: {
+                callbacks: {
+                  label: function (context) {
+                    const v = context.parsed.y || 0;
+                    return " " + formatUSD(v);
+                  }
+                }
+              }
+            },
+            scales: {
+              x: {
+                ticks: {
+                  maxTicksLimit: 8
+                }
+              },
+              y: {
+                ticks: {
+                  callback: function (value) {
+                    return "$" + Number(value).toLocaleString("en-US");
+                  }
+                }
+              }
+            }
+          }
+        });
+      } catch (err) {
+        console.error("Erro ao carregar gráfico BTC:", err);
+        errorBoxEl.textContent =
+          "Erro ao carregar gráfico de preço (CoinGecko).";
       }
     }
 
@@ -389,15 +461,18 @@
 
     // DISPAROS INICIAIS
     loadBTC();
+    loadBTCChart();
     loadFNG();
     loadFunding();
     loadOI();
 
     // AGENDAMENTOS
-    setInterval(loadBTC, 30_000);      // 30s
-    setInterval(loadFunding, 60_000);  // 1min
-    setInterval(loadOI, 60_000);       // 1min
-    setInterval(loadFNG, 15 * 60_000); // 15min (Fear & Greed muda 1x/dia)
+    setInterval(loadBTC, 30_000);       // 30s
+    setInterval(loadFunding, 60_000);   // 1min
+    setInterval(loadOI, 60_000);        // 1min
+    setInterval(loadFNG, 15 * 60_000);  // 15min
+    setInterval(loadBTCChart, 5 * 60_000); // atualiza gráfico a cada 5min
   </script>
 </body>
 </html>
+
